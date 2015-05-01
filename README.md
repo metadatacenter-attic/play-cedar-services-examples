@@ -15,7 +15,7 @@ The project contains two subdirectories:
 
 Clone the project:
 
-`$ git clone https://github.com/metadatacenter/play-cedar-service.git`
+`$ git clone https://github.com/metadatacenter/play-cedar-services-examples.git`
 
 Install MongoDB:
 
