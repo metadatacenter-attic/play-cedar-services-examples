@@ -35,10 +35,12 @@ $ mvn test
 
 ## Starting the services
 
-```
-$ cd cedar-services-examples-play
+At the project root folder:
 
+```
+$ mvn install
+$ cd cedar-services-examples-play
 $ mvn play2:run
 ```
 
-By default, the services will be running at http://localhost:9000
+By default, the services will be running at http://localhost:9000.
