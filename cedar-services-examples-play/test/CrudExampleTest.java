@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.CrudExampleController;
 import org.junit.*;
 import org.metadatacenter.examples.crud.MainService;
@@ -8,6 +9,9 @@ import play.libs.ws.WSResponse;
 
 import javax.management.InstanceNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static play.test.Helpers.*;
 
@@ -28,12 +32,6 @@ public class CrudExampleTest {
      */
     @BeforeClass
     public static void oneTimeSetUp() {
-        tElement1 = Json.newObject()
-                .put("name", "element1 name")
-                .put("value", "element1 value");
-        tElement2 = Json.newObject()
-                .put("name", "element2 name")
-                .put("value", "element2 value");
     }
 
     /**
@@ -49,6 +47,12 @@ public class CrudExampleTest {
      */
     @Before
     public void setUp() {
+        tElement1 = Json.newObject()
+                .put("name", "element1 name")
+                .put("value", "element1 value");
+        tElement2 = Json.newObject()
+                .put("name", "element2 name")
+                .put("value", "element2 value");
         running(testServer(3333), new Runnable() {
             public void run() {
                 deleteAllTElements();
@@ -80,8 +84,10 @@ public class CrudExampleTest {
                 Assert.assertEquals(OK, wsResponse.getStatus());
                 // Check Content-Type
                 Assert.assertEquals("application/json; charset=utf-8", wsResponse.getHeader("Content-Type"));
+                String actualId = wsResponse.asJson().get("_id").get("$oid").asText();
+                // Retrieve the element created
+                JsonNode actual = WS.url(serverUrl + "/telements/" + actualId ).get().get(timeout).asJson();
                 JsonNode expected = tElement1;
-                JsonNode actual = findTElementById(wsResponse.asJson().get("_id").get("$oid").asText());
                 // Check fields
                 Assert.assertNotNull(actual.get("name"));
                 Assert.assertEquals(expected.get("name"), actual.get("name"));
@@ -95,18 +101,29 @@ public class CrudExampleTest {
     public void findAllTElementsTest() {
         running(testServer(3333), new Runnable() {
             public void run() {
-                createTElement(tElement1);
-                createTElement(tElement2);
+                // Create two sample elements
+                tElement1 = WS.url(serverUrl + "/telements").post(tElement1).get(timeout).asJson();
+                tElement2 = WS.url(serverUrl + "/telements").post(tElement2).get(timeout).asJson();
                 // Service invocation - Find all
                 WSResponse wsResponse = WS.url(serverUrl + "/telements").get().get(timeout);
                 // Check response is OK
                 Assert.assertEquals(wsResponse.getStatus(), OK);
                 // Check Content-Type
                 Assert.assertEquals(wsResponse.getHeader("Content-Type"), "application/json; charset=utf-8");
-                // Check the results obtained
+                // Store actual and expected results into two sets, to compare them
+                Set expectedSet = new HashSet<JsonNode>();
+                expectedSet.add(tElement1);
+                expectedSet.add(tElement2);
+                Set actualSet = new HashSet<JsonNode>();
                 JsonNode jsonResponse = wsResponse.asJson();
-                int size = jsonResponse.size();
-                Assert.assertEquals(2, jsonResponse.size());
+                Iterator it = jsonResponse.iterator();
+                while (it.hasNext()) {
+                    actualSet.add(it.next());
+                }
+                // Check the number of results
+                Assert.assertEquals(expectedSet.size(), actualSet.size());
+                // Check the results
+                Assert.assertEquals(expectedSet, actualSet);
             }
         });
     }
@@ -115,7 +132,8 @@ public class CrudExampleTest {
     public void findTElementByIdTest() {
         running(testServer(3333), new Runnable() {
             public void run() {
-                JsonNode expected = createTElement(tElement1);
+                // Create an element
+                JsonNode expected = WS.url(serverUrl + "/telements").post(tElement1).get(timeout).asJson();
                 String id = expected.get("_id").get("$oid").asText();
                 // Service invocation - Find by Id
                 WSResponse wsResponse = WS.url(serverUrl + "/telements/" + id).get().get(timeout);
@@ -134,7 +152,9 @@ public class CrudExampleTest {
     public void updateTElementTest() {
         running(testServer(3333), new Runnable() {
             public void run() {
-                JsonNode elementCreated = createTElement(tElement1);
+                // Create an element
+                JsonNode elementCreated = WS.url(serverUrl + "/telements").post(tElement1).get(timeout).asJson();
+                // Update the element created
                 String id = elementCreated.get("_id").get("$oid").asText();
                 String updatedName = "new name";
                 JsonNode changes = Json.newObject().put("name", updatedName);
@@ -145,7 +165,7 @@ public class CrudExampleTest {
                 // Check Content-Type
                 Assert.assertEquals(wsResponse.getHeader("Content-Type"), "application/json; charset=utf-8");
                 // Retrieve updated element
-                JsonNode actual = findTElementById(id);
+                JsonNode actual = WS.url(serverUrl + "/telements/" + id).get().get(timeout).asJson();
                 // Check if the modifications have been done correctly
                 Assert.assertNotNull(actual.get("name"));
                 Assert.assertEquals(updatedName, actual.get("name").asText());
@@ -159,43 +179,21 @@ public class CrudExampleTest {
     public void deleteTElementTest() {
         running(testServer(3333), new Runnable() {
             public void run() {
-                JsonNode elementCreated = createTElement(tElement1);
+                // Create an element
+                JsonNode elementCreated = WS.url(serverUrl + "/telements").post(tElement1).get(timeout).asJson();
                 String id = elementCreated.get("_id").get("$oid").asText();
                 // Service invocation - Delete
                 WSResponse wsResponse = WS.url(serverUrl + "/telements/" + id).delete().get(timeout);
                 // Check response is OK
                 Assert.assertEquals(wsResponse.getStatus(), OK);
-                // Check that the element has been deleted
+                // Check that the element has been deleted by trying to find it by id
                 WSResponse wsResponse1 = WS.url(serverUrl + "/telements/" + id).get().get(timeout);
                 Assert.assertEquals(NOT_FOUND, wsResponse1.getStatus());
             }
         });
     }
 
-    // Helpers
-    public JsonNode findTElementById(String id) {
-        JsonNode tElement = null;
-        try {
-            try {
-                tElement = CrudExampleController.mainService.findTElementById(id);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (InstanceNotFoundException e) {
-            e.printStackTrace();
-        }
-        return tElement;
-    }
-
-    public JsonNode createTElement(JsonNode tElement) {
-        try {
-            tElement = CrudExampleController.mainService.createTElement(tElement);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return tElement;
-    }
-
+    // Helper method to remove all elements from the DB
     public void deleteAllTElements() {
         CrudExampleController.mainService.deleteAllTElements();
     }
