@@ -1,14 +1,11 @@
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.CrudExampleController;
+import controllers.CrudController;
 import org.junit.*;
 import org.metadatacenter.examples.crud.MainService;
 import play.libs.Json;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 
-import javax.management.InstanceNotFoundException;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -18,13 +15,12 @@ import static play.test.Helpers.*;
 /*
  * Integration Tests. They are done using a test server.
  */
-public class CrudExampleTest {
+public class CrudHttpTest {
 
     private final String serverUrl = "http://localhost:3333";
-    private final int timeout = 5000;
+    private final int timeout = 10000;
     private static JsonNode tElement1;
     private static JsonNode tElement2;
-    private static MainService mainService;
 
     /**
      * One-time initialization code.
@@ -195,6 +191,6 @@ public class CrudExampleTest {
 
     // Helper method to remove all elements from the DB
     public void deleteAllTElements() {
-        CrudExampleController.mainService.deleteAllTElements();
+        CrudController.mainService.deleteAllTElements();
     }
 }

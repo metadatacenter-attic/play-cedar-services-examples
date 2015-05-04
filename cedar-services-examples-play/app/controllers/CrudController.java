@@ -12,7 +12,7 @@ import play.mvc.Result;
 import javax.management.InstanceNotFoundException;
 import java.util.List;
 
-public class CrudExampleController extends Controller {
+public class CrudController extends Controller {
 
     public static MainService<String, JsonNode> mainService;
 
