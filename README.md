@@ -44,3 +44,7 @@ $ mvn play2:run
 ```
 
 By default, the services will be running at http://localhost:9000.
+
+## IntelliJ IDEA 14 configuration
+
+Instructions on how to configure IntelliJ 14 to build and run this project are available [here] (https://github.com/metadatacenter/cedar-docs/wiki/Maven-Play-project-configuration-in-IntelliJ-IDEA-14).
