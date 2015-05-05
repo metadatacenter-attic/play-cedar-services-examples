@@ -9,10 +9,10 @@ object MyBuild extends Build {
   val playProjectName = projectArtifactId + "-play"
 
   val coreProject = Project(coreProjectName, file(coreProjectName))
-      .settings(
-        version := Pom.projectVersion(baseDirectory.value),
-        scalaVersion := projectScalaVersion,
-        libraryDependencies ++= Pom.dependencies(baseDirectory.value))
+    .settings(
+      version := Pom.projectVersion(baseDirectory.value),
+      scalaVersion := projectScalaVersion,
+      libraryDependencies ++= Pom.dependencies(baseDirectory.value))
 
   val playProject = Project(playProjectName, file(playProjectName))
     .enablePlugins(play.PlayScala)
