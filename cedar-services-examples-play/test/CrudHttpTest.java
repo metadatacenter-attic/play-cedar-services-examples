@@ -1,7 +1,6 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.CrudController;
 import org.junit.*;
-import org.metadatacenter.examples.crud.MainService;
 import play.libs.Json;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
