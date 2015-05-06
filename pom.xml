@@ -28,7 +28,7 @@
         <play2.maven.plugin.version>1.0.0-beta1</play2.maven.plugin.version>
         <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
         <play-java-ws.version>2.3.8</play-java-ws.version>
-
+        <junit.version>4.12</junit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
